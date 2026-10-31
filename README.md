@@ -1,115 +1,124 @@
-<h1 align="center">Supplier Deliveries for Claude Code</h1>
+# Supplier Deliveries for Claude Code
 
-<p align="center">
-  <strong>The open-source supplier delivery desk that is just a database and Claude Code.</strong>
-</p>
+Keep supplier commitments, overdue parts and receipt evidence in a database you own. Ask what will miss production, what is still unconfirmed and which buyer needs to act.
 
-<p align="center">
-  Created by <a href="https://www.enterprisedna.co"><strong>Enterprise DNA</strong></a>. Free and open source. Works with Claude Code, Codex, OpenCode or Cursor.
-</p>
+## Three ways to own it
 
-<!-- three-doors -->
-<table align="center">
-  <tr>
-    <td align="center"><strong>Do it yourself</strong><br/>Clone it, run it, own it. Free, MIT.<br/><a href="#quick-start">Quick start</a></td>
-    <td align="center"><strong>We customise it</strong><br/>Your fields, your rules, your SourceDay data brought across.<br/><a href="https://enterprisedna.co/omni/book/?utm_source=github&utm_medium=readme&utm_campaign=sourceday">Book a call</a></td>
-    <td align="center"><strong>We run it for you</strong><br/>Installed, connected and operated inside Omni. Setup fee, then a retainer.<br/><a href="https://enterprisedna.co/omni/instead-of/sourceday?utm_source=github&utm_medium=readme&utm_campaign=sourceday">How it works</a></td>
-  </tr>
-</table>
+- **Do it yourself:** install the MIT-licensed base and use Claude Code, Codex, OpenCode or Cursor. Hosting and your agent subscription are separate costs.
+- **We customise it:** Enterprise DNA maps your SourceDay records, changes fields and rules, connects your existing systems, and builds a web front end or a different stack when needed. One setup fee, then a retainer for ongoing work.
+- **We run it for you:** Omni by Enterprise DNA installs it, manages access and backups, prepares reviews and keeps the system working. One setup fee, then a retainer.
 
-<p align="center">
-  <a href="#what-is-this">What is this</a> &bull;
-  <a href="#why-no-front-end">Why no front end</a> &bull;
-  <a href="#quick-start">Quick start</a> &bull;
-  <a href="#the-commands">Commands</a> &bull;
-  <a href="#instead-of-sourceday">Instead of SourceDay</a> &bull;
-  <a href="#want-it-installed-and-run-for-you">Installed for you</a> &bull;
-  <a href="#license">License</a>
-</p>
+[Book a 30-minute call with Sam](https://enterprisedna.co/omni/book/?offer=replace-software&utm_source=github&utm_medium=readme&utm_campaign=sourceday).
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Node-20+-339933?style=flat-square" alt="Node 20+" />
-  <img src="https://img.shields.io/badge/PostgreSQL-any-336791?style=flat-square" alt="PostgreSQL" />
-  <img src="https://img.shields.io/badge/PGlite-embedded-3ecf8e?style=flat-square" alt="PGlite" />
-  <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="MIT License" />
-</p>
+## Run the synthetic demo
 
----
+Node 20 or newer. No cloud account is needed.
 
-## What is this
-
-Supplier Deliveries for Claude Code does the job you pay SourceDay for, as a Postgres database and a set of agent commands. There is no web front end. You open the folder in [Claude Code](https://claude.com/claude-code) (or Codex, OpenCode, Cursor: see `AGENTS.md`) and ask for what you want in plain language. It runs the right query, and it can answer questions the SourceDay dashboard cannot.
-
-<!-- TODO(author): the annual bill. One sentence: what a 10 to 50 person business typically pays SourceDay per year, all in, with a source. -->
-
-Want the same thing with a web front end, or built on a different stack? That is a customisation, and it is exactly what Enterprise DNA does: [book a call](https://enterprisedna.co/omni/book/?utm_source=github&utm_medium=readme&utm_campaign=sourceday).
-
-<!-- TODO(author): two or three sentences on what this specific product covers and who it is for. -->
-
-## Why no front end
-
-- The front end was only ever there because the database was hard to talk to. That is no longer true.
-- Your data sits in plain Postgres tables you own. Any tool can read them. No export, no lock-in.
-- No seats, no tiers, no add-ons. Read [docs/why-no-front-end.md](docs/why-no-front-end.md) for the honest trade-offs too.
-
-## Quick start
-
-Sixty seconds, no database install (an embedded Postgres runs inside Node):
-
-```bash
-git clone https://github.com/Enterprise-DNA-OS/supplier-deliveries-for-claude-code.git
-cd supplier-deliveries-for-claude-code
+```sh
 npm install
+npm test
 npm run demo
+npm run deliveries -- expedite-list
+npm run deliveries -- supplier-scorecard --json
+npm run view
+npm run docs
 ```
 
-Then open the folder in Claude Code and type a slash command. <!-- TODO(author): name the first command to try. -->
+The invented demo includes a missed need date, a partial receipt, an unacknowledged line, a late promise, an overdue follow-up and a stale confirmation. Repeated seeding preserves edits. Use a new DATA_DIR for real data and never seed it. Set DATABASE_URL for PostgreSQL or leave it empty for PGlite under .data/db.
 
-### Use it with your own Postgres or Supabase
+## What you own
 
-Copy `.env.example` to `.env`, set `DATABASE_URL`, then `npm run migrate`. Same commands, shared data, no per-seat fee.
+A supplier register and an order-line ledger keyed by supplier, purchase order, line and release. Each line retains its original need date. Supplier date proposals remain pending until a buyer records acceptance or rejection. Accepted promises never rewrite the original need date.
 
-## The commands
+Receipts are append-only, supported by a docket reference and checked against outstanding quantity under a row lock. Partial receipts reduce the balance. Duplicate docket references, over-receipts and future receipts are rejected. Corrections require a reviewed migration so the original evidence remains available.
 
-<!-- TODO(author): a table of the slash commands in .claude/commands and what each one does. -->
+Imported received balances lack receipt dates and stay outside measured on-time delivery counts. Exported promise dates do not become fresh acknowledgements. Cancelled lines keep their history. Follow-ups and promise decisions have named actors and an append-only activity record. Database owners can bypass controls; this is a trusted operator tool.
+
+This base runs a buyer's delivery review from records. SourceDay also provides supplier interaction and connected ERP workflows. No vendor network, live ERP synchronisation, supplier portal, shipment feed, price negotiation or payment processing is included. Connections and supplier screens are work Enterprise DNA scopes for your version.
+
+## Recurring jobs
 
 | Command | What it does |
 |---|---|
-| `/...` | ... |
+| /suppliers | Read suppliers and their delivery position. |
+| /lines | List purchase order lines, outstanding quantities and dates. |
+| /expedite-list | Prioritise missing parts, late promises and unconfirmed deliveries. |
+| /acknowledgements-due | Find open lines without an accepted supplier commitment. |
+| /promise-changes | Read supplier proposals awaiting a buyer decision. |
+| /receipts-due | Read deliveries expected in the next seven days, including overdue ones. |
+| /stale-promises | Find accepted commitments last confirmed over seven days ago. |
+| /supplier-scorecard | Compare open lines and completed delivery evidence by supplier. |
+| /followups | Read the action list, including completed follow-ups. |
+| /overdue | Find overdue follow-ups and their owners. |
+| /compliance | Check retention metadata and supplier purpose reviews. |
+| /activity | Read who recorded each operational change. |
+| /help | Read command names and supported flags. |
+| /line | Read one line with its promises, receipts and follow-ups. |
+| /add-supplier | Register a supplier with an owner and a retention review date. |
+| /add-line | Record a purchase order line from an authorised source. |
+| /propose-promise | Record a supplier promise for buyer review. |
+| /decide-promise | Accept or reject a supplier promise after the buyer instructs you. |
+| /receive | Record a physical receipt from its delivery docket. |
+| /log-followup | Record follow-up work with an owner and due date. |
+| /close-followup | Close a follow-up with the actual outcome. |
+| /cancel-line | Mark an open line cancelled without deleting its history. |
+| /retention | Set a line retention date from the agreed jurisdiction policy. |
+| /review-supplier | Record a reviewed purpose and next review date for supplier information. |
+| /import | Validate and import a SourceDay view CSV. |
+| /export | Write a complete private JSON snapshot to a new file. |
+| /weekly-review | Draft Monday review from the expedite list, pending promises and overdue actions. |
+| /draft-chase | Draft one supplier follow-up from the outstanding delivery records. |
+| /customise | Add a field or change a rule with a tested migration. |
+| /new-view | Add a branded read-only report. |
 
-## Instead of SourceDay
+All 28 CLI commands support --json. Flags use --name=value. /customise and /new-view are agent recipes, giving 30 slash commands in total.
 
-<!-- TODO(author): how to bring data across from SourceDay; link docs/replace-sourceday.md -->
+## Ten questions your own records answer
 
-## Architecture
+1. Which parts have missed the original need date despite a revised supplier promise? (`expedite-list`)
+2. Which open lines still lack a buyer-recorded supplier acknowledgement? (`acknowledgements-due`)
+3. Which proposed dates are awaiting a buyer decision? (`promise-changes`)
+4. How many units are still due after each partial receipt? (`lines`)
+5. Which accepted commitments have gone more than a week without reconfirmation? (`stale-promises`)
+6. Which follow-ups are overdue and who owns them? (`overdue`)
+7. Which suppliers delivered complete lines by the original need date? (`supplier-scorecard`)
+8. Which imported balances have no receipt timing evidence? (`supplier-scorecard`)
+9. Which records need retention evidence or a supplier purpose review? (`compliance`)
+10. Who accepted each promise and what evidence supported it? (`line`)
 
-```
-supplier-deliveries-for-claude-code/
-  CLAUDE.md                 how the operator wants this run (routing table + house rules)
-  AGENTS.md                 the same, for Codex / OpenCode / Cursor / Gemini CLI
-  .claude/commands/         the slash commands
-  scripts/                  the CLI the commands drive
-  scripts/lib/db.mjs        one adapter: DATABASE_URL (pg) or embedded PGlite
-  supabase/migrations/      plain SQL schema
-  supabase/seed.sql         demo data
-  docs/                     the thesis and the migration guide
-```
+These are tested analyses, not a claim that SourceDay cannot answer them. Custom rules and joined history are what make an owned system different.
 
-## Built for coding agents
+## Your first hour: ten things to ask for
 
-The database, CLI and command recipes work with Claude Code, Codex, OpenCode or Cursor. Ask your coding agent for a new command and have it implement and test the change against the same records.
+1. Put our name, colours and logo in brand.json.
+2. Show the parts that missed their original need date.
+3. Show promises waiting for a buyer decision.
+4. Show the outstanding balance after each partial receipt.
+5. Draft the Monday review from three current reports.
+6. Draft a follow-up for one named supplier.
+7. Test our SourceDay export and reconcile every release.
+8. Show suppliers with unknown receipt timing.
+9. Add our production-job reference with a tested migration.
+10. Export a private snapshot before changing any rule.
 
-## Contributing
+## Switch from SourceDay
 
-Issues and pull requests are welcome. Keep the shape: plain SQL, a small CLI, a slash command per recurring job, no front end.
+[The replace guide](docs/replace-sourceday.md) covers SourceDay's documented Tab Export / View export, required columns, explicit date mapping and reconciliation. A single import command handles the selected CSV view, preserves extra fields and stores the original file. Repeating an identical import is a no-op. A changed row for an existing line is rejected rather than overwriting live work. The supplied fixture is synthetic, not a captured account export. Validate a real export before switching.
 
-## Want it installed and run for you?
+SourceDay does not publish a numeric list price on the vendor pages reviewed. [Research](docs/research.md) explains the five-figure buyer evidence and its limits without presenting it as a vendor quote or an ANZ invoice.
 
-Enterprise DNA installs Supplier Deliveries for Claude Code for your business, migrates your SourceDay data, connects it to the rest of your tools, and runs it for you as part of **Omni**, our managed Command Center. One setup fee, then a monthly retainer.
+## Documents and views
 
-- Book a call: [enterprisedna.co/omni/book](https://enterprisedna.co/omni/book/?offer=replace-software&utm_source=github&utm_medium=readme&utm_campaign=sourceday)
-- Read more: [enterprisedna.co/omni/instead-of/sourceday](https://enterprisedna.co/omni/instead-of/sourceday?utm_source=github&utm_medium=readme&utm_campaign=sourceday)
+Edit brand.json, then run npm run view for the week, supplier scorecard and record review. npm run docs writes supplier follow-up drafts, goods receipt working records and supplier promise decision records as HTML. Print to PDF for filing. Evidence fields are references; original attachments must stay in your controlled document store. Nothing sends or publishes. [Why no front end](docs/why-no-front-end.md) explains mobile and shared-screen limits.
 
-## License
+## Compliance and operations
 
-MIT. Copyright (c) 2026 Enterprise DNA.
+[Compliance](docs/compliance.md) documents the NZ retention checks and their sources. They identify missing dates and review work. They do not certify compliance or automatically delete information.
+
+npm test uses a temporary database and output folder, exercises all CLI commands and checks quantity arithmetic, approvals, atomic imports, duplicates, date handling, exports and HTML escaping. CI is configured for Windows and Ubuntu on Node 20 and 22, plus PostgreSQL 16. Observed run results belong in the delivery report. TEST_DATABASE_URL must be an empty disposable database.
+
+All domain tables have row-level security enabled and PUBLIC privileges removed. Use a trusted owner connection. There is no multi-tenant login system. Restrict OS and database access and protect reports and exports. export creates a new complete JSON snapshot including original imports, mapping and activity. Use native database backups too; snapshot restore is a reviewed maintenance operation, not an automated command.
+
+## Licence
+
+MIT. Copyright 2026 Enterprise DNA. SourceDay belongs to its owner. This independent implementation contains no vendor code or assets.

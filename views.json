@@ -1,13 +1,37 @@
 [
   {
     "name": "week",
-    "title": "This week",
-    "subtitle": "Supplier Deliveries for Claude Code: what needs attention, rendered by npm run view",
+    "title": "Supplier delivery week",
     "sections": [
       {
-        "title": "Needs attention",
-        "note": "TODO(author): point this at the industry's attention view (overdue, stuck, quiet).",
-        "sql": "select 'replace me' as item, 'TODO(author)' as why"
+        "title": "Expedite first",
+        "sql": "SELECT reference,supplier,item,outstanding,needed_on,promise_on,reason FROM expedite_queue WHERE reason <> 'on plan' ORDER BY overdue DESC,needed_on"
+      },
+      {
+        "title": "Follow-ups due",
+        "sql": "SELECT d.reference,f.note,f.owner,f.due_on FROM followups f JOIN delivery_position d ON d.id=f.line_id WHERE closed_at IS NULL AND due_on<=current_date+7 ORDER BY due_on"
+      }
+    ]
+  },
+  {
+    "name": "suppliers",
+    "title": "Supplier delivery scorecard",
+    "sections": [
+      {
+        "title": "Delivery evidence",
+        "note": "On-time counts use completed lines with no opening received balance. Imported opening balances have unknown receipt timing. No percentage is inferred from them.",
+        "sql": "SELECT code,name,open_lines,overdue_lines,late_promises,measured_deliveries,on_time_deliveries,timing_unknown_lines FROM supplier_scorecard ORDER BY name"
+      }
+    ]
+  },
+  {
+    "name": "compliance",
+    "title": "Record review",
+    "sections": [
+      {
+        "title": "Evidence and retention",
+        "note": "These are record checks, not a certification of legal compliance. See docs/compliance.md.",
+        "sql": "SELECT rule,record,finding FROM compliance_findings ORDER BY rule,record"
       }
     ]
   }

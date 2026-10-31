@@ -1,11 +1,49 @@
 [
   {
-    "name": "example",
-    "title": "TODO(author): the first document this industry must produce",
-    "for_each": "select gen_random_uuid() as id, 'Example' as name",
+    "name": "supplier-chase",
+    "title": "Supplier delivery follow-up draft",
+    "for_each": "SELECT id,name FROM suppliers ORDER BY name",
     "file": "name",
     "sections": [
-      { "title": "Details", "sql": "select 'replace me' as item, $1::text as record_id" }
+      {
+        "title": "Outstanding deliveries",
+        "note": "Draft for review. Nothing has been sent. Confirm the requested dates against the supplier evidence.",
+        "sql": "SELECT reference,item,outstanding,needed_on,promise_on,reason FROM expedite_queue WHERE supplier_id=$1 ORDER BY needed_on"
+      },
+      {
+        "title": "Open follow-ups",
+        "sql": "SELECT d.reference,f.note,f.owner,f.due_on FROM followups f JOIN delivery_position d ON d.id=f.line_id WHERE d.supplier_id=$1 AND f.closed_at IS NULL ORDER BY f.due_on"
+      }
+    ]
+  },
+  {
+    "name": "receipt-record",
+    "title": "Goods receipt working record",
+    "for_each": "SELECT id,reference AS name FROM delivery_position ORDER BY reference",
+    "file": "name",
+    "sections": [
+      {
+        "title": "Order position",
+        "layout": "record",
+        "sql": "SELECT reference,supplier,item,ordered,received,outstanding,needed_on,promise_on,status FROM delivery_position WHERE id=$1"
+      },
+      {
+        "title": "Delivery dockets",
+        "note": "Opening received balances have no inferred date. Retain original receipt documents separately.",
+        "sql": "SELECT reference,received_on,quantity,evidence,actor FROM receipts WHERE line_id=$1 ORDER BY received_on"
+      }
+    ]
+  },
+  {
+    "name": "promise-review",
+    "title": "Supplier promise decision record",
+    "for_each": "SELECT id,reference AS name FROM delivery_position ORDER BY reference",
+    "file": "name",
+    "sections": [
+      {
+        "title": "Recorded proposals",
+        "sql": "SELECT proposed_on,evidence,actor,decision,decided_by,decision_reason,decided_at FROM promises WHERE line_id=$1 ORDER BY created_at,id"
+      }
     ]
   }
 ]

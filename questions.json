@@ -1,0 +1,42 @@
+[
+  {
+    "ask": "Which parts have missed the original need date despite a revised supplier promise?",
+    "command": "expedite-list"
+  },
+  {
+    "ask": "Which open lines still lack a buyer-recorded supplier acknowledgement?",
+    "command": "acknowledgements-due"
+  },
+  {
+    "ask": "Which proposed dates are awaiting a buyer decision?",
+    "command": "promise-changes"
+  },
+  {
+    "ask": "How many units are still due after each partial receipt?",
+    "command": "lines"
+  },
+  {
+    "ask": "Which accepted commitments have gone more than a week without reconfirmation?",
+    "command": "stale-promises"
+  },
+  {
+    "ask": "Which follow-ups are overdue and who owns them?",
+    "command": "overdue"
+  },
+  {
+    "ask": "Which suppliers delivered complete lines by the original need date?",
+    "command": "supplier-scorecard"
+  },
+  {
+    "ask": "Which imported balances have no receipt timing evidence?",
+    "command": "supplier-scorecard"
+  },
+  {
+    "ask": "Which records need retention evidence or a supplier purpose review?",
+    "command": "compliance"
+  },
+  {
+    "ask": "Who accepted each promise and what evidence supported it?",
+    "command": "line"
+  }
+]
